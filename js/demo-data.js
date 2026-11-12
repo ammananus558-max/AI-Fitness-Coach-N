@@ -1,0 +1,552 @@
+/* ============================================================
+   AI FITNESS COACH — DEMO / SEED CONTENT LIBRARY
+
+   afcSeedDemoData() writes the content collections (goals,
+   exercises, workouts, meals, diet plans, weekly plans, pricing,
+   chatbot, settings). It never creates users, so admin statistics
+   always reflect real registrations.
+
+   Every content record carries the three personalization tags
+   read by js/personalization.js:
+     gender : male | female | other | all
+     goal   : weight-loss | gain-muscle | strength | fat-loss
+              | fitness | endurance | general
+     level  : beginner | intermediate | advanced | all
+
+   Media fields use the folder convention documented in
+   assets/README.md. The files are not shipped: the owner drops them
+   in and the app starts showing them automatically, because
+   afcResolveExerciseMedia() probes each candidate and falls back to
+   a generated placeholder rather than rendering a broken player.
+   ============================================================ */
+
+/* Bumped whenever the shape or tagging of the library changes.
+   js/storage.js re-seeds the content collections (never users,
+   settings, pricing, media or chatbot edits) when this moves on. */
+window.AFC_LIBRARY_VERSION = 2;
+
+/* ---------------- media path convention ---------------- */
+
+function afcExerciseImage(gender, slug) {
+  return "assets/images/exercises/" + afcMediaFolder(gender) + "/" + slug + ".jpg";
+}
+function afcExerciseAnime(gender, slug) {
+  return "";
+}
+function afcExerciseVideo(gender, slug) {
+  return "";
+}
+function afcMealImage(slug) {
+  return "assets/images/meals/" + slug + ".jpg";
+}
+function afcWorkoutImage(gender, slug) {
+  return "assets/images/workouts/" + afcMediaFolder(gender) + "/" + slug + ".jpg";
+}
+
+/* ---------------- exercise builder ---------------- */
+
+/* ex(key, name, gender, goal, level, category, sets, reps, duration,
+      rest, caloriesPerSet, instructions, description) */
+function ex(key, name, gender, goal, level, category, sets, reps, duration, rest, cal, instructions, description) {
+  return {
+    key: key,
+    name: name,
+    gender: gender,
+    goal: goal,
+    level: level,
+    category: category,
+    sets: sets,
+    reps: reps,
+    duration: duration || 0,
+    rest: rest || 30,
+    calories: cal || 0,
+    videoId: "",
+    image: afcExerciseImage(gender, key),
+    video: afcExerciseVideo(gender, key),
+    animeVideo: afcExerciseAnime(gender, key),
+    instructions: instructions,
+    description: description
+  };
+}
+
+/* ---------------- the library ---------------- */
+
+window.AFC_DEMO = {
+  settings: {
+    siteName: "AI FITNESS COACH",
+    tagline: "TRAIN • EAT • EVOLVE",
+    heroTitle: "YOUR AI FITNESS COACH",
+    heroSubtitle: "Personalized workouts, anime-guided exercises and smart nutrition — all stored privately on your device.",
+    primaryColor: "#ff2e63",
+    trialDays: 7,
+    waterGoal: 8,
+    defaultTheme: "dark",
+    defaultUnits: "metric",
+    contactEmail: "support@aifitnesscoach.example",
+    contactPhone: "",
+    contactAddress: "",
+    socialFacebook: "",
+    socialInstagram: "",
+    socialX: "",
+    workoutDefaults: { sets: 3, reps: 12, rest: 30, duration: 0, calories: 0 },
+    logoURL: ""
+  },
+
+  goals: [
+    { key: "weight-loss", title: "Lose Weight",       label: "Lose Weight",       icon: "bi-fire",                  description: "Burn fat with cardio, full-body circuits and a smart calorie target.",              level: "beginner",     workout: "fat-burn-foundations",  diet: "deficit-balanced" },
+    { key: "gain-muscle", title: "Gain Muscle",       label: "Gain Muscle",       icon: "bi-trophy-fill",           description: "Build size with progressive resistance training and protein-rich meals.",           level: "intermediate", workout: "muscle-builder-upper",  diet: "muscle-fuel" },
+    { key: "strength",    title: "Build Strength",    label: "Build Strength",    icon: "bi-lightning-charge-fill", description: "Get stronger with lower reps, higher tension and longer rest.",                     level: "advanced",     workout: "strength-power-legs",   diet: "strength-fuel" },
+    { key: "fat-loss",    title: "Fat Loss",          label: "Fat Loss",          icon: "bi-droplet-fill",          description: "High-intensity intervals and lean meals to drop body fat while keeping muscle.",    level: "intermediate", workout: "hiit-shred",            diet: "lean-cut" },
+    { key: "fitness",     title: "Improve Fitness",   label: "Improve Fitness",   icon: "bi-activity",              description: "Balanced conditioning for energy, mobility and everyday strength.",                 level: "beginner",     workout: "everyday-fitness-mix",  diet: "balanced-fitness" },
+    { key: "endurance",   title: "Improve Endurance", label: "Improve Endurance", icon: "bi-stopwatch-fill",        description: "Longer efforts and stamina work so you can go further for longer.",                 level: "intermediate", workout: "endurance-engine",      diet: "endurance-carb" },
+    { key: "general",     title: "General Health",    label: "General Health",    icon: "bi-heart-pulse-fill",      description: "Stay well with varied movement and balanced nutrition.",                            level: "beginner",     workout: "wellness-basics",       diet: "balanced-fitness" }
+  ],
+
+  exercises: [
+    /* ---- foundational, everyone ---- */
+    ex("squats", "Bodyweight Squats", "all", "general", "beginner", "Legs", 3, 15, 0, 30, 8,
+      "Stand with feet shoulder-width apart. Lower your hips back and down until thighs are parallel to the floor, then drive through your heels to stand.",
+      "The king of lower-body moves: quads, glutes and core in one."),
+    ex("push-ups", "Push Ups", "all", "general", "beginner", "Chest", 3, 12, 0, 30, 7,
+      "Keep your body in a straight line from head to heels. Lower your chest toward the floor, then push back up.",
+      "Classic upper-body press for chest, shoulders and triceps."),
+    ex("plank", "Plank", "all", "general", "beginner", "Core", 3, 0, 30, 20, 4,
+      "Hold a straight-line position on your forearms. Keep your core tight, glutes squeezed and breathe steadily.",
+      "Isometric core brace that builds stability for everything else."),
+    ex("glute-bridge", "Glute Bridge", "all", "general", "beginner", "Glutes", 3, 15, 0, 25, 5,
+      "Lie on your back, knees bent, feet flat. Drive your hips up, squeeze your glutes at the top, then lower slowly.",
+      "Wakes up the glutes and eases a tight lower back."),
+    ex("superman", "Superman Hold", "all", "general", "beginner", "Back", 3, 12, 0, 20, 4,
+      "Lie face down, lift arms and legs off the floor together, hold briefly, then lower with control.",
+      "Strengthens the spinal erectors and rear shoulders."),
+    ex("dead-bug", "Dead Bug", "all", "general", "beginner", "Core", 3, 12, 0, 20, 4,
+      "Lie on your back, extend opposite arm and leg, return, and alternate. Keep your lower back pressed into the floor.",
+      "Deep-core control without loading the spine."),
+    ex("bird-dog", "Bird Dog", "all", "general", "beginner", "Core", 3, 10, 0, 20, 3,
+      "On all fours, extend one arm and the opposite leg until parallel to the floor. Hold, return, and switch sides.",
+      "Balance and anti-rotation strength for the trunk."),
+    ex("incline-pushups", "Incline Push Ups", "all", "general", "beginner", "Chest", 3, 12, 0, 30, 5,
+      "Place your hands on a raised surface, lower your chest toward it, then push back up. Keep hips level.",
+      "A gentler press progression that builds toward floor push ups."),
+
+    /* ---- cardio / fat burn ---- */
+    ex("jumping-jacks", "Jumping Jacks", "all", "weight-loss", "beginner", "Cardio", 3, 30, 0, 20, 6,
+      "Jump your feet wide while raising your arms overhead, then return. Keep a steady rhythm.",
+      "Full-body warm-up that spikes the heart rate fast."),
+    ex("high-knees", "High Knees", "all", "weight-loss", "beginner", "Cardio", 3, 30, 0, 20, 7,
+      "Run in place lifting your knees to hip height. Pump your arms and stay light on your feet.",
+      "Running form drill and cardio burner in one."),
+    ex("jump-rope", "Jump Rope", "all", "endurance", "beginner", "Cardio", 4, 0, 60, 30, 12,
+      "Turn the rope with your wrists, not your arms. Jump just high enough to clear it and land softly.",
+      "Cheap, portable conditioning that trains feet, calves and lungs."),
+    ex("mountain-climbers", "Mountain Climbers", "all", "fat-loss", "intermediate", "Cardio", 3, 20, 0, 25, 9,
+      "From a plank, drive your knees toward your chest alternately at a quick pace. Keep hips low.",
+      "Core-plus-cardio combo that torches calories."),
+    ex("plank-jacks", "Plank Jacks", "all", "fat-loss", "intermediate", "Cardio", 3, 20, 0, 25, 8,
+      "From a plank or forearm plank, jump your feet wide then back together. Keep your hips from bouncing.",
+      "Holds the plank tension while adding a cardio burst."),
+    ex("burpees", "Burpees", "all", "fat-loss", "advanced", "Full Body", 3, 10, 0, 40, 14,
+      "Squat, kick back to a plank, push up, return your feet, and jump up with arms overhead.",
+      "The hardest bodyweight finisher there is."),
+    ex("tuck-jumps", "Tuck Jumps", "male", "endurance", "advanced", "Cardio", 3, 10, 0, 40, 12,
+      "Jump vertically and pull your knees toward your chest at the top. Land softly and immediately repeat.",
+      "Explosive plyometric power for sprint athletes."),
+    ex("sprint-intervals", "Sprint Intervals", "all", "endurance", "advanced", "Cardio", 6, 0, 30, 60, 15,
+      "Sprint hard for 30 seconds, then walk or jog for 60 seconds. Repeat six times.",
+      "Builds top-end speed and a big aerobic engine."),
+
+    /* ---- legs / glutes ---- */
+    ex("lunges", "Walking Lunges", "all", "gain-muscle", "intermediate", "Legs", 3, 12, 0, 30, 9,
+      "Step forward and lower your hips until both knees are at 90 degrees. Push off the front heel and step into the next rep.",
+      "Unilateral leg strength and balance."),
+    ex("wall-sit", "Wall Sit", "all", "endurance", "beginner", "Legs", 3, 0, 40, 30, 5,
+      "Slide your back down a wall until your thighs are parallel to the floor. Hold and breathe.",
+      "Isometric quad endurance that hurts in the best way."),
+    ex("jump-squats", "Jump Squats", "male", "strength", "intermediate", "Legs", 4, 12, 0, 35, 11,
+      "Squat down, then explode up and jump as high as you can. Land softly and sink straight into the next rep.",
+      "Explosive lower-body power for athletes."),
+    ex("bulgarian-split-squat", "Bulgarian Split Squat", "female", "gain-muscle", "intermediate", "Legs", 3, 10, 0, 35, 10,
+      "Rest your rear foot on a bench behind you. Lower your back knee toward the floor, keeping your front shin vertical.",
+      "Glute and quad builder with a deep stretch."),
+    ex("curtsy-lunge", "Curtsy Lunge", "female", "gain-muscle", "beginner", "Legs", 3, 12, 0, 25, 7,
+      "Step one foot back and across behind the other, then lower into a lunge. Return and alternate sides.",
+      "Targets the outer glute and shapes the legs."),
+    ex("pistol-squat", "Pistol Squat", "male", "strength", "advanced", "Legs", 3, 6, 0, 60, 10,
+      "Stand on one leg, extend the other in front, and squat all the way down before standing again. Use a doorframe for balance.",
+      "Elite single-leg strength and mobility."),
+    ex("calf-raises", "Calf Raises", "all", "endurance", "beginner", "Legs", 3, 20, 0, 20, 4,
+      "Rise onto your toes, pause at the top, then lower slowly until you feel a stretch in the calf.",
+      "Ankle stability and running economy."),
+
+    /* ---- glutes, female-focused ---- */
+    ex("hip-thrust", "Hip Thrust", "female", "gain-muscle", "intermediate", "Glutes", 4, 12, 0, 35, 9,
+      "Rest your upper back on a bench, feet flat. Drive your hips up until your body is straight, squeeze hard, then lower.",
+      "The single best glute-building exercise."),
+    ex("donkey-kicks", "Donkey Kicks", "female", "gain-muscle", "beginner", "Glutes", 3, 15, 0, 20, 5,
+      "On all fours, lift one bent leg up toward the ceiling, squeezing the glute at the top. Lower with control and alternate.",
+      "Isolated glute work with zero lower-back load."),
+    ex("fire-hydrant", "Fire Hydrant", "female", "gain-muscle", "beginner", "Glutes", 3, 15, 0, 20, 4,
+      "On all fours, lift one knee out to the side until it is level with your hip. Lower slowly and alternate.",
+      "Hits the glute medius for hip stability and shape."),
+    ex("single-leg-bridge", "Single-Leg Glute Bridge", "female", "gain-muscle", "intermediate", "Glutes", 3, 12, 0, 25, 6,
+      "Lie on your back, extend one leg, then drive your hips up on the planted heel. Lower slowly.",
+      "Progression of the bridge that doubles the load per side."),
+
+    /* ---- upper body ---- */
+    ex("triceps-dips", "Triceps Dips", "all", "gain-muscle", "intermediate", "Arms", 3, 12, 0, 30, 6,
+      "Using a sturdy chair, lower your body by bending your elbows to about 90 degrees, then press back up.",
+      "Horseshoe triceps from a chair or bench."),
+    ex("bicep-curls", "Bicep Curls", "all", "gain-muscle", "beginner", "Arms", 3, 15, 0, 25, 5,
+      "Curl the weight toward your shoulders while keeping your elbows tucked to your sides. Lower with control.",
+      "Isolated arm growth; use water bottles if you have no weights."),
+    ex("diamond-pushups", "Diamond Push Ups", "male", "gain-muscle", "intermediate", "Chest", 3, 10, 0, 35, 8,
+      "Place your hands together under your chest forming a diamond. Lower your chest to your hands and press up.",
+      "Triceps-dominant press variation for arm and inner-chest size."),
+    ex("clap-pushups", "Clap Push Ups", "male", "strength", "advanced", "Chest", 3, 8, 0, 45, 10,
+      "Push up explosively so your hands leave the floor, clap once, then land softly and repeat.",
+      "Upper-body power that transfers to throwing and punching."),
+    ex("pike-pushups", "Pike Push Ups", "all", "strength", "intermediate", "Shoulders", 3, 10, 0, 35, 7,
+      "Hips high in an inverted V, lower the crown of your head toward the floor between your hands, then press up.",
+      "Shoulder pressing strength and a step toward handstands."),
+    ex("shoulder-taps", "Shoulder Taps", "all", "fitness", "beginner", "Shoulders", 3, 20, 0, 20, 5,
+      "From a high plank, tap your opposite shoulder with one hand while keeping your hips perfectly still.",
+      "Anti-rotation core work disguised as a shoulder drill."),
+    ex("band-rows", "Band Rows", "other", "strength", "beginner", "Back", 3, 15, 0, 25, 5,
+      "Anchor a band in front of you, pull your elbows back past your ribs, squeeze your shoulder blades, then release slowly.",
+      "Low-impact pulling strength that is kind to the joints."),
+    ex("good-mornings", "Good Mornings", "all", "strength", "intermediate", "Back", 3, 12, 0, 30, 6,
+      "Hinge at your hips with a soft knee bend, lowering your torso toward the floor, then squeeze your glutes to stand tall.",
+      "Posterior-chain hinge pattern for a strong back and hamstrings."),
+
+    /* ---- core ---- */
+    ex("russian-twist", "Russian Twist", "all", "general", "intermediate", "Core", 3, 20, 0, 25, 6,
+      "Sit leaning back slightly with feet lifted, then rotate your torso side to side with control.",
+      "Oblique rotation strength."),
+    ex("side-plank", "Side Plank", "other", "general", "intermediate", "Core", 3, 0, 30, 20, 4,
+      "Stack your feet, lift your hips and hold a straight line on one forearm. Keep the top hand on your hip.",
+      "Lateral core stability that protects the spine."),
+    ex("flutter-kicks", "Flutter Kicks", "all", "fat-loss", "intermediate", "Core", 3, 0, 30, 25, 7,
+      "Lie on your back, hands under your hips, and alternate small kicks just above the floor. Press your lower back down.",
+      "Lower-ab endurance burner."),
+    ex("v-ups", "V Ups", "all", "fat-loss", "advanced", "Core", 3, 12, 0, 30, 9,
+      "From lying flat, lift your legs and torso together to meet in a V, reach for your toes, then lower slowly.",
+      "Full-range ab strength for advanced trainees."),
+    ex("dragon-flag", "Dragon Flag", "other", "strength", "advanced", "Core", 3, 6, 0, 60, 10,
+      "Grip a bench behind your head, lift your whole body into a vertical line, then lower it slowly without letting your hips sag.",
+      "Elite core tension made famous by Bruce Lee."),
+    ex("hollow-hold", "Hollow Body Hold", "all", "strength", "intermediate", "Core", 3, 0, 25, 25, 4,
+      "Lie on your back, press your lower back down, and lift your arms and legs a few inches off the floor. Hold.",
+      "Gymnastic core position that improves every lift."),
+
+    /* ---- mobility / inclusive ---- */
+    ex("yoga-flow", "Yoga Sun Salutation", "other", "general", "beginner", "Full Body", 3, 0, 60, 20, 5,
+      "Flow from mountain pose to forward fold to plank, up-dog and down-dog, moving with your breath.",
+      "Full-body mobility and calm, adaptable to any body."),
+    ex("worlds-greatest-stretch", "World's Greatest Stretch", "all", "fitness", "beginner", "Full Body", 2, 8, 0, 15, 3,
+      "Lunge forward, place the same-side elbow inside the foot, then rotate and reach that arm to the ceiling.",
+      "Opens hips, thoracic spine and hamstrings in one move."),
+    ex("tai-chi-balance", "Tai Chi Balance Flow", "other", "general", "beginner", "Full Body", 3, 0, 60, 15, 3,
+      "Shift your weight slowly from one leg to the other, tracing smooth arcs with your arms and breathing deeply.",
+      "Low-impact balance and coordination for every body."),
+    ex("glute-march", "Glute March", "other", "fitness", "beginner", "Glutes", 3, 20, 0, 20, 4,
+      "Lie on your back with hips lifted in a bridge, then march one knee up at a time without dropping your hips.",
+      "Gentle glute activation that scales to any level.")
+  ],
+
+  workouts: [
+    { key: "fat-burn-foundations", name: "Fat Burn Foundations", gender: "all", goal: "weight-loss", level: "beginner", day: "cardio", duration: 20, description: "A simple full-body circuit to get moving and burning from day one.", exercises: ["jumping-jacks", "squats", "high-knees", "push-ups", "plank"], active: true },
+    { key: "everyday-fitness-mix", name: "Everyday Fitness Mix", gender: "all", goal: "fitness", level: "beginner", day: "full", duration: 22, description: "Balanced conditioning: a little strength, a little cardio, a lot of mobility.", exercises: ["worlds-greatest-stretch", "squats", "shoulder-taps", "jump-rope", "glute-bridge"], active: true },
+    { key: "wellness-basics", name: "Wellness Basics", gender: "all", goal: "general", level: "beginner", day: "full", duration: 15, description: "Gentle daily movement for long-term health and recovery.", exercises: ["glute-bridge", "superman", "dead-bug", "bird-dog", "wall-sit"], active: true },
+    { key: "core-stability", name: "Core Stability", gender: "all", goal: "general", level: "beginner", day: "core", duration: 15, description: "Build the brace that protects your spine in every other lift.", exercises: ["plank", "dead-bug", "bird-dog", "side-plank", "hollow-hold"], active: true },
+
+    { key: "female-glute-builder", name: "Glute Builder", gender: "female", goal: "gain-muscle", level: "beginner", day: "legs", duration: 25, description: "Glute-focused beginner session that shapes without overloading.", exercises: ["glute-bridge", "donkey-kicks", "fire-hydrant", "curtsy-lunge", "glute-march"], active: true },
+    { key: "female-lower-body-power", name: "Lower Body Power", gender: "female", goal: "gain-muscle", level: "intermediate", day: "legs", duration: 32, description: "Progressive lower-body work: thrusts, split squats and single-leg bridges.", exercises: ["hip-thrust", "bulgarian-split-squat", "single-leg-bridge", "lunges", "calf-raises"], active: true },
+    { key: "female-lean-shape", name: "Lean & Shape", gender: "female", goal: "fat-loss", level: "intermediate", day: "full", duration: 28, description: "Metabolic circuit that keeps muscle while dropping fat.", exercises: ["plank-jacks", "curtsy-lunge", "mountain-climbers", "single-leg-bridge", "flutter-kicks"], active: true },
+
+    { key: "muscle-builder-upper", name: "Muscle Builder — Upper", gender: "male", goal: "gain-muscle", level: "intermediate", day: "upper", duration: 30, description: "Push, pull and press for visible upper-body growth.", exercises: ["diamond-pushups", "pike-pushups", "triceps-dips", "bicep-curls", "band-rows"], active: true },
+    { key: "male-leg-day", name: "Leg Day", gender: "male", goal: "gain-muscle", level: "intermediate", day: "legs", duration: 34, description: "Heavy-feel leg work with bodyweight only.", exercises: ["jump-squats", "lunges", "wall-sit", "good-mornings", "calf-raises"], active: true },
+    { key: "strength-power-legs", name: "Strength & Power — Legs", gender: "male", goal: "strength", level: "advanced", day: "legs", duration: 38, description: "Explosive and unilateral work for serious lower-body strength.", exercises: ["pistol-squat", "jump-squats", "clap-pushups", "tuck-jumps", "good-mornings"], active: true },
+    { key: "male-shred-hiit", name: "Shred HIIT", gender: "male", goal: "weight-loss", level: "intermediate", day: "cardio", duration: 26, description: "Hard intervals with short rest to strip fat fast.", exercises: ["burpees", "mountain-climbers", "jump-squats", "high-knees", "plank-jacks"], active: true },
+
+    { key: "hiit-shred", name: "HIIT Shred", gender: "all", goal: "fat-loss", level: "intermediate", day: "cardio", duration: 24, description: "High-intensity intervals that keep burning after you finish.", exercises: ["mountain-climbers", "plank-jacks", "burpees", "flutter-kicks", "high-knees"], active: true },
+    { key: "endurance-engine", name: "Endurance Engine", gender: "all", goal: "endurance", level: "intermediate", day: "cardio", duration: 30, description: "Build the aerobic base with rope work, holds and intervals.", exercises: ["jump-rope", "wall-sit", "sprint-intervals", "calf-raises", "plank"], active: true },
+    { key: "total-body-strength", name: "Total Body Strength", gender: "all", goal: "strength", level: "intermediate", day: "full", duration: 30, description: "Hinge, press and brace for functional whole-body strength.", exercises: ["good-mornings", "pike-pushups", "hollow-hold", "lunges", "band-rows"], active: true },
+
+    { key: "inclusive-mobility", name: "Inclusive Mobility Flow", gender: "other", goal: "general", level: "beginner", day: "full", duration: 18, description: "Adaptable, low-impact flow that meets you where you are.", exercises: ["yoga-flow", "tai-chi-balance", "worlds-greatest-stretch", "glute-march", "bird-dog"], active: true },
+    { key: "inclusive-strength", name: "Inclusive Strength", gender: "other", goal: "strength", level: "intermediate", day: "upper", duration: 26, description: "Joint-friendly strength work with bands and bodyweight.", exercises: ["band-rows", "side-plank", "dragon-flag", "pike-pushups", "glute-march"], active: true },
+    { key: "core-crusher", name: "Core Crusher", gender: "all", goal: "fitness", level: "intermediate", day: "core", duration: 16, description: "Focused core circuit for stability, definition and strength.", exercises: ["plank", "russian-twist", "dead-bug", "mountain-climbers", "v-ups"], active: true },
+    { key: "cardio-blast", name: "Cardio Blast", gender: "all", goal: "weight-loss", level: "advanced", day: "cardio", duration: 22, description: "High-energy intervals to push your heart rate to the limit.", exercises: ["jumping-jacks", "high-knees", "burpees", "tuck-jumps", "mountain-climbers"], active: true }
+  ],
+
+  meals: [
+    /* ---- breakfast ---- */
+    { key: "oatmeal-banana", name: "Oatmeal + Banana", category: "breakfast", gender: "all", goal: "general", level: "all", calories: 320, protein: 10, carbs: 58, fat: 6, description: "Rolled oats with sliced banana and a drizzle of honey.", image: afcMealImage("oatmeal-banana"), active: true },
+    { key: "veggie-eggs", name: "Veggie Scrambled Eggs", category: "breakfast", gender: "all", goal: "gain-muscle", level: "all", calories: 290, protein: 20, carbs: 8, fat: 19, description: "Eggs scrambled with spinach, tomato and onion.", image: afcMealImage("veggie-eggs"), active: true },
+    { key: "greek-yogurt-bowl", name: "Greek Yogurt Bowl", category: "breakfast", gender: "female", goal: "gain-muscle", level: "all", calories: 280, protein: 22, carbs: 30, fat: 6, description: "Greek yogurt with berries and a little granola.", image: afcMealImage("greek-yogurt-bowl"), active: true },
+    { key: "avocado-toast", name: "Avocado Toast + Egg", category: "breakfast", gender: "all", goal: "fitness", level: "all", calories: 340, protein: 14, carbs: 34, fat: 18, description: "Whole-grain toast with avocado and a poached egg.", image: afcMealImage("avocado-toast"), active: true },
+    { key: "protein-pancakes", name: "Protein Pancakes", category: "breakfast", gender: "male", goal: "gain-muscle", level: "all", calories: 420, protein: 34, carbs: 46, fat: 10, description: "Oat, egg and whey pancakes with berries — a bigger build.", image: afcMealImage("protein-pancakes"), active: true },
+    { key: "green-smoothie", name: "Green Protein Smoothie", category: "breakfast", gender: "all", goal: "fat-loss", level: "all", calories: 230, protein: 24, carbs: 22, fat: 4, description: "Spinach, banana, protein powder and almond milk.", image: afcMealImage("green-smoothie"), active: true },
+    { key: "chia-pudding", name: "Chia Pudding", category: "breakfast", gender: "other", goal: "general", level: "all", calories: 260, protein: 9, carbs: 28, fat: 13, description: "Chia seeds set in plant milk with mango and lime.", image: afcMealImage("chia-pudding"), active: true },
+
+    /* ---- lunch ---- */
+    { key: "chicken-rice", name: "Chicken + Rice + Salad", category: "lunch", gender: "all", goal: "general", level: "all", calories: 520, protein: 42, carbs: 55, fat: 12, description: "Grilled chicken breast, steamed rice and fresh salad.", image: afcMealImage("chicken-rice"), active: true },
+    { key: "turkey-wrap", name: "Turkey Veggie Wrap", category: "lunch", gender: "all", goal: "weight-loss", level: "all", calories: 430, protein: 30, carbs: 42, fat: 14, description: "Whole-wheat wrap with turkey, lettuce, tomato and yogurt sauce.", image: afcMealImage("turkey-wrap"), active: true },
+    { key: "quinoa-bowl", name: "Quinoa Power Bowl", category: "lunch", gender: "female", goal: "fitness", level: "all", calories: 480, protein: 18, carbs: 60, fat: 16, description: "Quinoa with roasted vegetables, chickpeas and tahini.", image: afcMealImage("quinoa-bowl"), active: true },
+    { key: "tuna-pasta", name: "Tuna Pasta", category: "lunch", gender: "male", goal: "gain-muscle", level: "all", calories: 510, protein: 34, carbs: 58, fat: 13, description: "Whole-grain pasta with tuna, peas and olive oil.", image: afcMealImage("tuna-pasta"), active: true },
+    { key: "beef-rice-bowl", name: "Beef & Rice Power Bowl", category: "lunch", gender: "male", goal: "strength", level: "all", calories: 640, protein: 46, carbs: 68, fat: 20, description: "Lean beef, jasmine rice, kimchi and sesame.", image: afcMealImage("beef-rice-bowl"), active: true },
+    { key: "lentil-soup", name: "Lentil & Veg Soup", category: "lunch", gender: "other", goal: "general", level: "all", calories: 360, protein: 19, carbs: 52, fat: 7, description: "Red lentils simmered with carrot, cumin and lemon.", image: afcMealImage("lentil-soup"), active: true },
+    { key: "grilled-salmon-salad", name: "Salmon Cobb Salad", category: "lunch", gender: "all", goal: "fat-loss", level: "all", calories: 390, protein: 34, carbs: 14, fat: 22, description: "Grilled salmon over greens with egg and a light vinaigrette.", image: afcMealImage("grilled-salmon-salad"), active: true },
+    { key: "endurance-pasta", name: "Endurance Pasta", category: "lunch", gender: "all", goal: "endurance", level: "all", calories: 610, protein: 26, carbs: 92, fat: 14, description: "Pasta with tomato, chicken and parmesan — carb-loaded for long efforts.", image: afcMealImage("endurance-pasta"), active: true },
+
+    /* ---- snack ---- */
+    { key: "fruit-yogurt", name: "Fruit + Yogurt", category: "snack", gender: "all", goal: "general", level: "all", calories: 180, protein: 12, carbs: 24, fat: 3, description: "Seasonal fruit with natural yogurt.", image: afcMealImage("fruit-yogurt"), active: true },
+    { key: "nuts-fruit", name: "Nuts + Apple", category: "snack", gender: "all", goal: "fitness", level: "all", calories: 220, protein: 6, carbs: 22, fat: 13, description: "A handful of mixed nuts with an apple.", image: afcMealImage("nuts-fruit"), active: true },
+    { key: "protein-shake", name: "Protein Shake", category: "snack", gender: "male", goal: "gain-muscle", level: "all", calories: 200, protein: 25, carbs: 12, fat: 4, description: "Protein shake with milk or a plant-based alternative.", image: afcMealImage("protein-shake"), active: true },
+    { key: "hummus-carrots", name: "Hummus + Carrots", category: "snack", gender: "other", goal: "weight-loss", level: "all", calories: 160, protein: 6, carbs: 18, fat: 8, description: "Carrot sticks with two tablespoons of hummus.", image: afcMealImage("hummus-carrots"), active: true },
+    { key: "cottage-cheese-berries", name: "Cottage Cheese + Berries", category: "snack", gender: "female", goal: "gain-muscle", level: "all", calories: 190, protein: 22, carbs: 16, fat: 4, description: "Slow-digesting casein with antioxidant-rich berries.", image: afcMealImage("cottage-cheese-berries"), active: true },
+    { key: "rice-cakes-pb", name: "Rice Cakes + Peanut Butter", category: "snack", gender: "all", goal: "endurance", level: "all", calories: 240, protein: 8, carbs: 26, fat: 12, description: "Quick fuel before a long session.", image: afcMealImage("rice-cakes-pb"), active: true },
+    { key: "edamame", name: "Sea Salt Edamame", category: "snack", gender: "all", goal: "fat-loss", level: "all", calories: 150, protein: 13, carbs: 12, fat: 6, description: "Steamed soybeans — filling, low-calorie, plant protein.", image: afcMealImage("edamame"), active: true },
+
+    /* ---- dinner ---- */
+    { key: "chicken-veg", name: "Chicken + Vegetables", category: "dinner", gender: "all", goal: "general", level: "all", calories: 450, protein: 40, carbs: 20, fat: 18, description: "Baked chicken with roasted seasonal vegetables.", image: afcMealImage("chicken-veg"), active: true },
+    { key: "salmon-potato", name: "Salmon + Sweet Potato", category: "dinner", gender: "female", goal: "gain-muscle", level: "all", calories: 520, protein: 36, carbs: 38, fat: 22, description: "Baked salmon fillet with sweet potato wedges and greens.", image: afcMealImage("salmon-potato"), active: true },
+    { key: "veggie-stirfry", name: "Veggie Stir-Fry + Rice", category: "dinner", gender: "other", goal: "general", level: "all", calories: 420, protein: 14, carbs: 62, fat: 12, description: "Mixed vegetables stir-fried with tofu and rice.", image: afcMealImage("veggie-stirfry"), active: true },
+    { key: "lean-beef-salad", name: "Lean Beef Salad", category: "dinner", gender: "male", goal: "strength", level: "all", calories: 460, protein: 38, carbs: 18, fat: 24, description: "Grilled lean beef over a big mixed salad.", image: afcMealImage("lean-beef-salad"), active: true },
+    { key: "turkey-meatballs", name: "Turkey Meatballs + Zoodles", category: "dinner", gender: "all", goal: "weight-loss", level: "all", calories: 380, protein: 34, carbs: 18, fat: 18, description: "Lean turkey meatballs over courgette noodles.", image: afcMealImage("turkey-meatballs"), active: true },
+    { key: "tofu-curry", name: "Tofu Coconut Curry", category: "dinner", gender: "other", goal: "fitness", level: "all", calories: 470, protein: 20, carbs: 34, fat: 28, description: "Tofu and vegetables in a light coconut curry with rice.", image: afcMealImage("tofu-curry"), active: true },
+    { key: "white-fish-veg", name: "White Fish + Greens", category: "dinner", gender: "all", goal: "fat-loss", level: "all", calories: 340, protein: 36, carbs: 16, fat: 12, description: "Baked cod with steamed greens and lemon.", image: afcMealImage("white-fish-veg"), active: true },
+    { key: "chicken-risotto", name: "Chicken Risotto", category: "dinner", gender: "all", goal: "endurance", level: "all", calories: 580, protein: 34, carbs: 74, fat: 16, description: "Creamy rice with chicken and parmesan — recovery carbs.", image: afcMealImage("chicken-risotto"), active: true }
+  ],
+
+  dietPlans: [
+    { key: "deficit-balanced", name: "Balanced Deficit", gender: "all", goal: "weight-loss", level: "all", description: "Moderate calorie deficit with balanced macros for steady, sustainable fat loss.", slots: { breakfast: ["oatmeal-banana", "green-smoothie"], lunch: ["turkey-wrap", "grilled-salmon-salad"], snack: ["hummus-carrots", "fruit-yogurt"], dinner: ["turkey-meatballs", "white-fish-veg"] }, active: true },
+    { key: "lean-cut", name: "Lean Cut", gender: "all", goal: "fat-loss", level: "all", description: "Higher protein and lower carbs to drop body fat while holding onto muscle.", slots: { breakfast: ["green-smoothie", "veggie-eggs"], lunch: ["grilled-salmon-salad", "turkey-wrap"], snack: ["edamame", "hummus-carrots"], dinner: ["white-fish-veg", "turkey-meatballs"] }, active: true },
+    { key: "muscle-fuel", name: "Muscle Fuel", gender: "male", goal: "gain-muscle", level: "all", description: "Protein-forward, calorie-surplus meals to support size and recovery.", slots: { breakfast: ["protein-pancakes", "veggie-eggs"], lunch: ["beef-rice-bowl", "tuna-pasta"], snack: ["protein-shake", "nuts-fruit"], dinner: ["lean-beef-salad", "chicken-rice"] }, active: true },
+    { key: "female-muscle-gain", name: "Female Muscle Gain", gender: "female", goal: "gain-muscle", level: "all", description: "Protein and healthy fats scaled for muscle gain without overshooting calories.", slots: { breakfast: ["greek-yogurt-bowl", "veggie-eggs"], lunch: ["quinoa-bowl", "chicken-rice"], snack: ["cottage-cheese-berries", "protein-shake"], dinner: ["salmon-potato", "chicken-veg"] }, active: true },
+    { key: "female-lean-shape", name: "Female Lean & Shape", gender: "female", goal: "fat-loss", level: "all", description: "Lower-calorie, high-protein plan built around training days.", slots: { breakfast: ["green-smoothie", "chia-pudding"], lunch: ["grilled-salmon-salad", "quinoa-bowl"], snack: ["fruit-yogurt", "edamame"], dinner: ["white-fish-veg", "turkey-meatballs"] }, active: true },
+    { key: "strength-fuel", name: "Strength Fuel", gender: "male", goal: "strength", level: "all", description: "Dense carbs and protein around training to power heavy sessions.", slots: { breakfast: ["protein-pancakes", "avocado-toast"], lunch: ["beef-rice-bowl", "endurance-pasta"], snack: ["rice-cakes-pb", "protein-shake"], dinner: ["lean-beef-salad", "chicken-rice"] }, active: true },
+    { key: "endurance-carb", name: "Endurance Carb Load", gender: "all", goal: "endurance", level: "all", description: "Carb-timed eating to fill glycogen before long efforts and refuel after.", slots: { breakfast: ["oatmeal-banana", "avocado-toast"], lunch: ["endurance-pasta", "chicken-rice"], snack: ["rice-cakes-pb", "fruit-yogurt"], dinner: ["chicken-risotto", "salmon-potato"] }, active: true },
+    { key: "balanced-fitness", name: "Balanced Fitness", gender: "all", goal: "fitness", level: "all", description: "Even macros and whole foods for energy, recovery and everyday health.", slots: { breakfast: ["avocado-toast", "oatmeal-banana"], lunch: ["quinoa-bowl", "chicken-rice"], snack: ["nuts-fruit", "fruit-yogurt"], dinner: ["chicken-veg", "tofu-curry"] }, active: true },
+    { key: "inclusive-balanced", name: "Inclusive Balanced Plate", gender: "other", goal: "general", level: "all", description: "Flexible, mostly plant-forward eating that adapts to any preference.", slots: { breakfast: ["chia-pudding", "oatmeal-banana"], lunch: ["lentil-soup", "veggie-stirfry"], snack: ["hummus-carrots", "fruit-yogurt"], dinner: ["tofu-curry", "veggie-stirfry"] }, active: true },
+    { key: "general-wellness", name: "General Wellness", gender: "all", goal: "general", level: "all", description: "Simple, balanced plates with no tracking required.", slots: { breakfast: ["oatmeal-banana", "chia-pudding"], lunch: ["chicken-rice", "lentil-soup"], snack: ["fruit-yogurt", "nuts-fruit"], dinner: ["chicken-veg", "veggie-stirfry"] }, active: true }
+  ],
+
+  /* Weekly plans are generated below from PLAN_SPECS so each
+     persona gets four distinct weeks. */
+  weeklyPlans: {},
+
+  /* Paid tiers. `durationDays` is how long a purchase unlocks the app. */
+  pricing: [
+    { key: "plan-basic", name: "Basic", tier: "basic", price: 4.99, durationDays: 30, period: "/mo", sortOrder: 1, featured: false, purchasable: true, active: true,
+      features: ["Core workout access", "Full workout library", "Your personalized diet plan", "Progress and streak tracking"],
+      description: "For keeping the habit going month to month." },
+    { key: "plan-premium", name: "Cloudy", tier: "premium", price: 89.99, durationDays: 365, period: "/yr", sortOrder: 2, featured: true, purchasable: true, active: true,
+      features: ["Everything in Basic", "12 months of access", "New plans every month", "Exclusive programs", "Priority support"],
+      description: "A year of coaching with exclusive programs." }
+    ,{ key: "plan-pro", name: "Cloudy", tier: "pro", price: 9.99, durationDays: 30, period: "/mo", sortOrder: 3, featured: false, purchasable: true, active: true,
+      features: ["Everything in Basic", "4-week personalized program", "AI assistant", "Before & after gallery"],
+      description: "The full coaching experience, renewed monthly." }
+  ],
+
+  chatbot: [
+    { key: "warmup", question: "warm up", answer: "Always warm up for about 5 minutes: light jogging, arm circles and dynamic stretches prepare your body and reduce injury risk.", category: "Workout Tips" },
+    { key: "protein", question: "protein", answer: "Good protein sources include eggs, chicken, fish, Greek yogurt, legumes and tofu. Aim to include protein in every main meal.", category: "Meal Tips" },
+    { key: "rest-day", question: "rest day", answer: "Rest days are when your body adapts and gets stronger. Light walking or stretching is perfect — intense training is not required every day.", category: "Workout Tips" },
+    { key: "anime-video", question: "anime video", answer: "Each exercise can carry an anime video. Drop your clips into assets/videos/{gender}/{exercise}-anime.mp4 and the workout player will pick them up automatically.", category: "App Help" },
+    { key: "trial", question: "trial", answer: "Every account starts with a 7-day free trial. When it ends you keep access to Subscription and Settings, and everything unlocks again the moment you subscribe.", category: "Account" },
+    { key: "personalization", question: "personalize", answer: "Your gender, goal, fitness level, age, weight, height and target weight all combine to pick your workouts, diet and weekly plan. Change any of them in Profile and the app refreshes instantly.", category: "App Help" }
+  ]
+};
+
+/* ---------------- weekly plan generation ---------------- */
+
+/* Each spec: identity tags + 4 weeks of workout keys + a diet plan key.
+   "rest" produces a rest day. Exercise names are resolved from the
+   exercises collection at seed time so renames stay consistent. */
+var AFC_PLAN_SPECS = [
+  {
+    key: "female-gain-muscle-beginner", name: "Female Muscle Gain — Beginner",
+    gender: "female", goal: "gain-muscle", level: "beginner", diet: "female-muscle-gain",
+    description: "Four-week glute and shape foundation for women starting out.",
+    weeks: [
+      ["female-glute-builder", "core-stability", "rest", "everyday-fitness-mix", "female-glute-builder", "wellness-basics", "rest"],
+      ["female-glute-builder", "rest", "core-stability", "female-lower-body-power", "everyday-fitness-mix", "wellness-basics", "rest"],
+      ["female-lower-body-power", "core-stability", "rest", "female-glute-builder", "everyday-fitness-mix", "wellness-basics", "rest"],
+      ["female-lower-body-power", "rest", "core-stability", "everyday-fitness-mix", "female-glute-builder", "wellness-basics", "rest"]
+    ]
+  },
+  {
+    key: "male-weight-loss-intermediate", name: "Male Weight Loss — Intermediate",
+    gender: "male", goal: "weight-loss", level: "intermediate", diet: "deficit-balanced",
+    description: "Four-week fat-burn block mixing HIIT, strength and steady cardio.",
+    weeks: [
+      ["male-shred-hiit", "muscle-builder-upper", "rest", "fat-burn-foundations", "male-leg-day", "endurance-engine", "rest"],
+      ["fat-burn-foundations", "rest", "male-shred-hiit", "muscle-builder-upper", "endurance-engine", "male-leg-day", "rest"],
+      ["male-shred-hiit", "male-leg-day", "rest", "muscle-builder-upper", "fat-burn-foundations", "endurance-engine", "rest"],
+      ["endurance-engine", "male-shred-hiit", "muscle-builder-upper", "rest", "male-leg-day", "fat-burn-foundations", "rest"]
+    ]
+  },
+  {
+    key: "general-fitness-beginner", name: "General Fitness — Beginner",
+    gender: "all", goal: "fitness", level: "beginner", diet: "balanced-fitness",
+    description: "A gentle four-week on-ramp to consistent training.",
+    weeks: [
+      ["everyday-fitness-mix", "rest", "wellness-basics", "core-stability", "rest", "fat-burn-foundations", "rest"],
+      ["fat-burn-foundations", "core-stability", "rest", "everyday-fitness-mix", "rest", "wellness-basics", "rest"],
+      ["everyday-fitness-mix", "rest", "fat-burn-foundations", "core-stability", "wellness-basics", "rest", "rest"],
+      ["core-stability", "everyday-fitness-mix", "rest", "wellness-basics", "fat-burn-foundations", "rest", "rest"]
+    ]
+  },
+  {
+    key: "male-strength-advanced", name: "Male Strength — Advanced",
+    gender: "male", goal: "strength", level: "advanced", diet: "strength-fuel",
+    description: "High-tension four-week strength block for experienced trainees.",
+    weeks: [
+      ["strength-power-legs", "muscle-builder-upper", "rest", "total-body-strength", "rest", "strength-power-legs", "rest"],
+      ["total-body-strength", "strength-power-legs", "rest", "muscle-builder-upper", "rest", "male-leg-day", "rest"],
+      ["strength-power-legs", "rest", "total-body-strength", "male-leg-day", "rest", "muscle-builder-upper", "rest"],
+      ["total-body-strength", "strength-power-legs", "rest", "muscle-builder-upper", "male-leg-day", "rest", "rest"]
+    ]
+  },
+  {
+    key: "female-fat-loss-intermediate", name: "Female Fat Loss — Intermediate",
+    gender: "female", goal: "fat-loss", level: "intermediate", diet: "female-lean-shape",
+    description: "Metabolic four-week cut that protects muscle.",
+    weeks: [
+      ["female-lean-shape", "hiit-shred", "rest", "female-lower-body-power", "core-crusher", "rest", "rest"],
+      ["hiit-shred", "rest", "female-lean-shape", "core-crusher", "female-lower-body-power", "endurance-engine", "rest"],
+      ["female-lean-shape", "core-crusher", "rest", "hiit-shred", "rest", "female-lower-body-power", "endurance-engine"],
+      ["hiit-shred", "female-lean-shape", "rest", "core-crusher", "endurance-engine", "rest", "rest"]
+    ]
+  },
+  {
+    key: "other-general-beginner", name: "Inclusive Wellness — Beginner",
+    gender: "other", goal: "general", level: "beginner", diet: "inclusive-balanced",
+    description: "Adaptable, low-impact four-week plan for every body.",
+    weeks: [
+      ["inclusive-mobility", "rest", "wellness-basics", "core-stability", "rest", "inclusive-mobility", "rest"],
+      ["wellness-basics", "inclusive-mobility", "rest", "core-stability", "rest", "everyday-fitness-mix", "rest"],
+      ["inclusive-mobility", "rest", "core-stability", "wellness-basics", "rest", "everyday-fitness-mix", "rest"],
+      ["core-stability", "inclusive-mobility", "rest", "wellness-basics", "everyday-fitness-mix", "rest", "rest"]
+    ]
+  },
+  {
+    key: "general-all-all", name: "Standard 4-Week Program",
+    gender: "all", goal: "general", level: "all", diet: "general-wellness",
+    description: "The fallback program used when nothing else matches your profile.",
+    weeks: [
+      ["fat-burn-foundations", "core-crusher", "rest", "total-body-strength", "cardio-blast", "wellness-basics", "rest"],
+      ["everyday-fitness-mix", "rest", "fat-burn-foundations", "core-crusher", "muscle-builder-upper", "cardio-blast", "rest"],
+      ["total-body-strength", "cardio-blast", "rest", "everyday-fitness-mix", "core-crusher", "fat-burn-foundations", "rest"],
+      ["cardio-blast", "total-body-strength", "wellness-basics", "rest", "everyday-fitness-mix", "core-crusher", "rest"]
+    ]
+  }
+];
+
+var AFC_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+
+/* Rotates the chosen diet plan's slot options across the four weeks
+   so no two days in a row repeat the same meal. */
+function afcPickMeal(slots, category, weekIdx, dayIdx) {
+  var options = (slots && slots[category]) || [];
+  if (!options.length) return null;
+  return options[(weekIdx + dayIdx) % options.length];
+}
+
+(function buildWeeklyPlans() {
+  var exByKey = {};
+  AFC_DEMO.exercises.forEach(function (e) { exByKey[e.key] = e; });
+  var wByKey = {};
+  AFC_DEMO.workouts.forEach(function (w) { wByKey[w.key] = w; });
+  var dByKey = {};
+  AFC_DEMO.dietPlans.forEach(function (d) { dByKey[d.key] = d; });
+
+  AFC_PLAN_SPECS.forEach(function (spec) {
+    var dietPlan = dByKey[spec.diet] || dByKey["general-wellness"];
+    var weeks = {};
+    for (var w = 0; w < 4; w++) {
+      var week = {};
+      for (var d = 0; d < 7; d++) {
+        var wKey = spec.weeks[w][d];
+        var workout = wKey === "rest" ? null : wByKey[wKey];
+        var rest = !workout;
+        week[AFC_DAYS[d]] = {
+          restDay: rest,
+          notes: rest
+            ? "Recovery day: hydrate, stretch and sleep well."
+            : "Warm up for 5 minutes, then work through each exercise in order.",
+          workout: rest ? null : {
+            key: workout.key,
+            name: workout.name,
+            gender: workout.gender,
+            goal: workout.goal,
+            level: workout.level,
+            duration: workout.duration,
+            exercises: workout.exercises.map(function (k) { return exByKey[k] ? exByKey[k].name : k; }),
+            exerciseKeys: workout.exercises.slice()
+          },
+          diet: {
+            planKey: dietPlan.key,
+            planName: dietPlan.name,
+            breakfast: afcPickMeal(dietPlan.slots, "breakfast", w, d),
+            lunch: afcPickMeal(dietPlan.slots, "lunch", w, d),
+            snack: afcPickMeal(dietPlan.slots, "snack", w, d),
+            dinner: afcPickMeal(dietPlan.slots, "dinner", w, d)
+          }
+        };
+      }
+      weeks["week" + (w + 1)] = week;
+    }
+    AFC_DEMO.weeklyPlans[spec.key] = {
+      key: spec.key,
+      name: spec.name,
+      gender: spec.gender,
+      goal: spec.goal,
+      level: spec.level,
+      diet: spec.diet,
+      description: spec.description,
+      weeks: weeks,
+      active: true
+    };
+  });
+
+  /* Flat meal list per diet plan, for the existing "N meals" display. */
+  AFC_DEMO.dietPlans.forEach(function (p) {
+    var flat = [];
+    Object.keys(p.slots || {}).forEach(function (cat) {
+      (p.slots[cat] || []).forEach(function (k) { if (flat.indexOf(k) < 0) flat.push(k); });
+    });
+    p.meals = flat;
+  });
+})();
+
+/* ---------------- seeding ---------------- */
+
+function toMap(list) {
+  return Object.fromEntries(list.map(function (item) { return [item.key, item]; }));
+}
+
+window.afcSeedDemoData = async function (onStep, only) {
+  var step = function (t) { if (onStep) onStep(t); };
+  /* `only` lets js/storage.js refresh just the library collections
+     after a content-version bump, leaving owner-managed settings,
+     pricing, chatbot rules and media untouched. */
+  var want = function (name) { return !only || only.indexOf(name) >= 0; };
+
+  if (want("settings")) { step("Writing settings..."); await afcDbSet("settings", AFC_DEMO.settings); }
+  if (want("goals")) { step("Writing goals..."); await afcDbSet("goals", toMap(AFC_DEMO.goals)); }
+  if (want("exercises")) { step("Writing exercises..."); await afcDbSet("exercises", toMap(AFC_DEMO.exercises)); }
+  if (want("workouts")) { step("Writing workouts..."); await afcDbSet("workouts", toMap(AFC_DEMO.workouts)); }
+  if (want("meals")) { step("Writing meals..."); await afcDbSet("meals", toMap(AFC_DEMO.meals)); }
+  if (want("dietPlans")) { step("Writing diet plans..."); await afcDbSet("dietPlans", toMap(AFC_DEMO.dietPlans)); }
+  if (want("weeklyPlans")) { step("Writing weekly plans..."); await afcDbSet("weeklyPlans", AFC_DEMO.weeklyPlans); }
+  if (want("pricing")) { step("Writing pricing..."); await afcDbSet("pricing", toMap(AFC_DEMO.pricing)); }
+  if (want("chatbot")) { step("Writing chatbot rules..."); await afcDbSet("chatbot", toMap(AFC_DEMO.chatbot)); }
+  if (want("media")) { step("Writing media library..."); await afcDbSet("media", {}); }
+  step("Done");
+};
+
+/* Export demo data (JSON string) for Admin -> Settings -> Export. */
+window.afcDemoDataJSON = function () {
+  return JSON.stringify(AFC_DEMO, null, 2);
+};

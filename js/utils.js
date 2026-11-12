@@ -1,0 +1,330 @@
+/* ============================================================
+   AI FITNESS COACH — PURE UTILITIES (no data-layer dependency)
+   ============================================================ */
+
+window.qs = (sel, root) => (root || document).querySelector(sel);
+window.qsa = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+/* ---------- Dates ---------- */
+
+/* Local YYYY-MM-DD key (used everywhere for daily records). */
+window.afcTodayKey = function () {
+  return afcDateKey(new Date());
+};
+window.afcDateKey = function (d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return y + "-" + m + "-" + day;
+};
+window.afcAddDays = function (dateKey, n) {
+  const d = new Date(dateKey + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return afcDateKey(d);
+};
+window.afcDaysBetween = function (aKey, bKey) {
+  const a = new Date(aKey + "T00:00:00");
+  const b = new Date(bKey + "T00:00:00");
+  return Math.round((b - a) / 86400000);
+};
+window.afcFmtDate = function (dateKey) {
+  if (!dateKey) return "";
+  const d = new Date(dateKey + (dateKey.length === 10 ? "T00:00:00" : ""));
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+};
+window.afcFmtDateTime = function (ts) {
+  const d = ts instanceof Date ? ts : new Date(ts);
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) +
+    " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+};
+window.afcGreeting = function () {
+  const h = new Date().getHours();
+  if (h < 12) return "GOOD MORNING";
+  if (h < 17) return "GOOD AFTERNOON";
+  return "GOOD EVENING";
+};
+window.afcWeekdayName = function (dateKey) {
+  return new Date(dateKey + "T00:00:00").toLocaleDateString(undefined, { weekday: "long" });
+};
+
+/* ---------- Health math ---------- */
+
+/* BMI = weight(kg) / (height(m)^2) */
+window.afcCalcBMI = function (heightCm, weightKg) {
+  if (!heightCm || !weightKg) return null;
+  const m = heightCm / 100;
+  return Math.round((weightKg / (m * m)) * 10) / 10;
+};
+window.afcBMICategory = function (bmi) {
+  if (bmi == null) return { label: "—", cls: "" };
+  if (bmi < 18.5) return { label: "Underweight", cls: "amber" };
+  if (bmi < 25) return { label: "Normal", cls: "green" };
+  if (bmi < 30) return { label: "Overweight", cls: "amber" };
+  return { label: "Obesity", cls: "red" };
+};
+
+/* Mifflin-St Jeor BMR + activity multiplier. */
+window.afcCalcCalories = function (p) {
+  const { age, gender, height, weight } = p || {};
+  const activityLevel = afcNormalizeActivity(p && p.activityLevel);
+  if (!age || !height || !weight) return null;
+  let bmr = 10 * weight + 6.25 * height - 5 * age;
+  bmr += gender === "female" ? -161 : 5;
+  const mult = {
+    light: 1.375,
+    moderate: 1.55,
+    active: 1.725,
+    very: 1.9
+  }[activityLevel] || 1.375;
+  const maintenance = bmr * mult;
+  return {
+    bmr: Math.round(bmr),
+    maintenance: Math.round(maintenance),
+    target: Math.round(maintenance) // daily target defaults to maintenance
+  };
+};
+
+window.afcNormalizeActivity = function (value) {
+  var key = String(value || "").trim().toLowerCase().replace(/[\s_-]+/g, "-");
+  return {
+    sedentary: "light",
+    "light-activity": "light",
+    "lightly-active": "light",
+    "moderate-activity": "moderate",
+    "moderately-active": "moderate",
+    "very-active": "very"
+  }[key] || (key === "light" || key === "moderate" || key === "active" || key === "very" ? key : "light");
+};
+
+/* ---------- Validation ---------- */
+window.afcValidEmail = function (v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v || "").trim());
+};
+window.afcValidPassword = function (v) {
+  return String(v || "").length >= 6;
+};
+window.afcIsNumber = function (v, min, max) {
+  const n = Number(v);
+  if (!isFinite(n)) return false;
+  if (min != null && n < min) return false;
+  if (max != null && n > max) return false;
+  return true;
+};
+window.AFC_MAX_IMAGE_MB = 5;
+window.AFC_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+window.afcValidateImage = function (file) {
+  if (!file) return "Please choose an image file.";
+  if (!AFC_IMAGE_TYPES.includes(file.type)) return "Only JPG, JPEG, PNG or WEBP images are allowed.";
+  if (file.size > AFC_MAX_IMAGE_MB * 1024 * 1024) return "Image must be under " + AFC_MAX_IMAGE_MB + " MB.";
+  return null;
+};
+
+/* Seeded catalog paths may refer to optional assets that are not bundled.
+   Only render sources the browser can actually resolve in this frontend. */
+window.afcCanRenderMedia = function (src) {
+  return /^(?:data:image\/|https?:\/\/|blob:)/i.test(String(src || ""));
+};
+
+window.afcNormalizeYoutubeId = function (value) {
+  var raw = String(value || "").trim();
+  var match = raw.match(/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)|youtu\.be\/)?([A-Za-z0-9_-]{11})$/);
+  return match ? match[1] : "";
+};
+
+window.afcYoutubeEmbedUrl = function (value) {
+  var id = afcNormalizeYoutubeId(value);
+  return id ? "https://www.youtube-nocookie.com/embed/" + id : "";
+};
+
+window.afcYoutubeCard = function (value, title) {
+  var id = afcNormalizeYoutubeId(value);
+  if (!id) return "";
+  return '<div class="exercise-video-frame"><iframe src="' + afcEscape(afcYoutubeEmbedUrl(id)) +
+    '" title="' + afcEscape(title || "Exercise video") +
+    '" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
+};
+
+/* ---------- Personalization taxonomy ----------
+   One canonical set of tags for goals, levels and genders. Every
+   reader, writer and editor normalizes through these functions so a
+   value typed by an admin, seeded by demo data, or left over from an
+   older build all resolve to the same key. */
+
+window.AFC_GOALS = [
+  { key: "weight-loss", label: "Lose Weight",       short: "Weight Loss", icon: "bi-fire",                     description: "Burn fat with cardio, full-body circuits and a smart calorie target." },
+  { key: "gain-muscle", label: "Gain Muscle",       short: "Muscle Gain", icon: "bi-trophy-fill",              description: "Build size with progressive resistance training and protein-rich meals." },
+  { key: "strength",    label: "Build Strength",    short: "Strength",    icon: "bi-lightning-charge-fill",    description: "Get stronger with lower reps, higher tension and longer rest." },
+  { key: "fat-loss",    label: "Fat Loss",          short: "Fat Loss",    icon: "bi-droplet-fill",             description: "High-intensity intervals and lean meals to drop body fat." },
+  { key: "fitness",     label: "Improve Fitness",   short: "Fitness",     icon: "bi-activity",                 description: "Balanced conditioning for energy, mobility and everyday strength." },
+  { key: "endurance",   label: "Improve Endurance", short: "Endurance",   icon: "bi-stopwatch-fill",           description: "Longer efforts and stamina work to go further for longer." },
+  { key: "general",     label: "General Health",    short: "General",     icon: "bi-heart-pulse-fill",         description: "Stay well with varied movement and balanced nutrition." }
+];
+window.AFC_LEVELS = [
+  { key: "beginner",     label: "Beginner",     icon: "bi-emoji-smile", description: "New to fitness or returning after a long break." },
+  { key: "intermediate", label: "Intermediate", icon: "bi-star-half",   description: "Regularly active with some training experience." },
+  { key: "advanced",     label: "Advanced",     icon: "bi-award-fill",  description: "Experienced athlete seeking intense programs." },
+  { key: "all",          label: "All Levels",   icon: "bi-infinity",    description: "Suitable for every experience level." }
+];
+window.AFC_GENDERS = [
+  { key: "male",   label: "Male",   icon: "bi-gender-male" },
+  { key: "female", label: "Female", icon: "bi-gender-female" },
+  { key: "other",  label: "Other",  icon: "bi-gender-ambiguous" },
+  { key: "all",    label: "All",    icon: "bi-people" }
+];
+
+var AFC_GOAL_ALIASES = {
+  "lose-weight": "weight-loss", "loseweight": "weight-loss", "weightloss": "weight-loss",
+  "lose_weight": "weight-loss", "weight-loss-goal": "weight-loss", "lean": "weight-loss",
+  "gain-muscle": "gain-muscle", "gainmuscle": "gain-muscle", "muscle-gain": "gain-muscle",
+  "build-muscle": "gain-muscle", "hypertrophy": "gain-muscle", "bulk": "gain-muscle",
+  "strength": "strength", "build-strength": "strength", "power": "strength", "strong": "strength",
+  "fat-loss": "fat-loss", "fatloss": "fat-loss", "cut": "fat-loss", "shred": "fat-loss",
+  "fitness": "fitness", "improve-fitness": "fitness", "general-fitness": "fitness", "conditioning": "fitness",
+  "endurance": "endurance", "improve-endurance": "endurance", "stamina": "endurance", "cardio": "endurance",
+  "general": "general", "stay-healthy": "general", "health": "general", "wellness": "general",
+  "maintain": "general", "all": "general"
+};
+var AFC_LEVEL_ALIASES = {
+  "easy": "beginner", "starter": "beginner", "novice": "beginner", "level-1": "beginner",
+  "medium": "intermediate", "mid": "intermediate", "level-2": "intermediate",
+  "hard": "advanced", "expert": "advanced", "elite": "advanced", "level-3": "advanced",
+  "any": "all", "every": "all", "mixed": "all", "": "all"
+};
+var AFC_GENDER_ALIASES = {
+  "m": "male", "man": "male", "boy": "male", "mens": "male", "men": "male",
+  "f": "female", "woman": "female", "girl": "female", "womens": "female", "women": "female",
+  "o": "other", "x": "other", "non-binary": "other", "nonbinary": "other",
+  "prefer-not-to-say": "other", "prefer_not_to_say": "other", "unspecified": "other",
+  "any": "all", "unisex": "all", "everyone": "all", "general": "all", "": "all"
+};
+
+function afcTagKey(v) {
+  return String(v == null ? "" : v).trim().toLowerCase()
+    .replace(/[\s_]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+function afcFindBy(list, key) {
+  for (var i = 0; i < list.length; i++) if (list[i].key === key) return list[i];
+  return null;
+}
+
+/* Any goal string -> one of the 7 canonical keys, else "general". */
+window.afcNormalizeGoal = function (v) {
+  var k = afcTagKey(v);
+  if (!k) return "general";
+  if (AFC_GOAL_ALIASES[k]) return AFC_GOAL_ALIASES[k];
+  if (afcFindBy(AFC_GOALS, k)) return k;
+  /* Substring fallback for free-text values an admin may type. */
+  if (/muscle|bulk|gain/.test(k)) return "gain-muscle";
+  if (/strength|power/.test(k)) return "strength";
+  if (/fat|cut|shred/.test(k)) return "fat-loss";
+  if (/endurance|stamina/.test(k)) return "endurance";
+  if (/weight|lean|lose|loss/.test(k)) return "weight-loss";
+  if (/fit|condition/.test(k)) return "fitness";
+  return "general";
+};
+window.afcNormalizeLevel = function (v) {
+  var k = afcTagKey(v);
+  if (!k) return "all";
+  if (AFC_LEVEL_ALIASES[k] !== undefined) return AFC_LEVEL_ALIASES[k];
+  if (afcFindBy(AFC_LEVELS, k)) return k;
+  if (/begin|start|easy|novice/.test(k)) return "beginner";
+  if (/inter|medium|mid/.test(k)) return "intermediate";
+  if (/adv|hard|expert|elite/.test(k)) return "advanced";
+  return "all";
+};
+window.afcNormalizeGender = function (v) {
+  var k = afcTagKey(v);
+  if (!k) return "all";
+  if (AFC_GENDER_ALIASES[k] !== undefined) return AFC_GENDER_ALIASES[k];
+  if (afcFindBy(AFC_GENDERS, k)) return k;
+  if (/fem|woman|girl/.test(k)) return "female";
+  if (/male|man|boy/.test(k)) return "male";
+  return "all";
+};
+
+window.afcGoalLabel = function (v) {
+  var g = afcFindBy(AFC_GOALS, afcNormalizeGoal(v));
+  return g ? g.label : "General Health";
+};
+window.afcLevelLabel = function (v) {
+  var l = afcFindBy(AFC_LEVELS, afcNormalizeLevel(v));
+  return l ? l.label : "All Levels";
+};
+window.afcGenderLabel = function (v) {
+  var g = afcFindBy(AFC_GENDERS, afcNormalizeGender(v));
+  return g ? g.label : "All";
+};
+
+/* Maps a gender tag onto its assets/ folder. Only male and female get
+   dedicated folders; "all" and "other" share "general" so the tree
+   stays small and predictable. */
+window.afcMediaFolder = function (gender) {
+  var g = afcNormalizeGender(gender);
+  return (g === "male" || g === "female") ? g : "general";
+};
+
+/* Options arrays for <select> elements and afcFormModal. */
+window.afcGoalOptions = function () {
+  return AFC_GOALS.map(function (g) { return { value: g.key, label: g.label }; });
+};
+window.afcLevelOptions = function () {
+  return AFC_LEVELS.map(function (l) { return { value: l.key, label: l.label }; });
+};
+window.afcGenderOptions = function () {
+  return AFC_GENDERS.map(function (g) { return { value: g.key, label: g.label }; });
+};
+
+/* ---------- Misc ---------- */
+window.afcEscape = function (s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+};
+window.afcClamp = function (v, min, max) { return Math.min(max, Math.max(min, v)); };
+
+/* URL/filename-safe slug. Used for record keys and for deriving
+   assets/ media paths from an exercise name. */
+window.afcSlugify = function (name) {
+  return String(name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+window.afcDebounce = function (fn, ms) {
+  let t;
+  return function () {
+    clearTimeout(t);
+    const args = arguments, ctx = this;
+    t = setTimeout(function () { fn.apply(ctx, args); }, ms);
+  };
+};
+window.afcFriendlyAuthError = function (err) {
+  const code = (err && (err.code || err.message)) || "";
+  const map = {
+    "auth/invalid-email": "That email address looks invalid.",
+    "auth/invalid-name": "Please enter your name.",
+    "auth/user-not-found": "No account found with that email.",
+    "auth/wrong-password": "Incorrect email or password.",
+    "auth/invalid-credential": "Incorrect email or password.",
+    "auth/email-already-in-use": "An account with that email already exists.",
+    "auth/weak-password": "Password should be at least 6 characters.",
+    "auth/too-many-requests": "Too many attempts. Please wait a moment and try again.",
+    "auth/requires-recent-login": "Please log in again to do that.",
+    "storage/quota-exceeded": "Device storage is full. Remove some photos or reset data in Settings, then try again.",
+    "NOT_ADMIN": "Incorrect admin email or password."
+  };
+  return map[code] || (err && err.message ? err.message : "Something went wrong. Please try again.");
+};
+
+/* Busy state helper for buttons: afcBusy(btn, true, "Signing in...") */
+window.afcBusy = function (btn, busy, text) {
+  if (!btn) return;
+  if (busy) {
+    btn.dataset.origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border" role="status" aria-hidden="true"></span> ' + (text || "Loading...");
+  } else {
+    btn.disabled = false;
+    if (btn.dataset.origHtml) btn.innerHTML = btn.dataset.origHtml;
+  }
+};
